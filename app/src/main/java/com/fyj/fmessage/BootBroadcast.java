@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.LocalBroadcastManager;
+import android.widget.Toast;
 
 /**
  * fyj
@@ -17,12 +18,19 @@ public class BootBroadcast extends BroadcastReceiver {
 
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		if (intent.getAction().equals(SMS_RECEIVED)) {
-			Bundle bundle = intent.getExtras();
+		if (lbm==null){
 			lbm = LocalBroadcastManager.getInstance(context);
-			Intent i = new Intent(BroadCmd.GET_MESSAGE);
-			i.putExtras(bundle);
-			lbm.sendBroadcast(i);
+		}
+		if (intent.getAction().equals(SMS_RECEIVED)) {
+			if (Global.isStart){
+				Bundle bundle = intent.getExtras();
+				Intent i = new Intent(BroadCmd.GET_MESSAGE);
+				i.putExtras(bundle);
+				lbm.sendBroadcast(i);
+			}else {
+				lbm.sendBroadcast(new Intent(BroadCmd.NO_START_SERVICE));
+			}
+
 		}
 	}
 

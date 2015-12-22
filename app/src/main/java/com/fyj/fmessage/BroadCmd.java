@@ -16,4 +16,6 @@ public class BroadCmd {
 	public static final String SEND_MESSAGE="send_message";
 
 	public static final String GET_MESSAGE="get_message";
+
+	public static final String NO_START_SERVICE="no_start_service";
 }

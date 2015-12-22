@@ -1,22 +1,23 @@
 package com.fyj.fmessage;
 
 import android.app.Activity;
-import android.app.Notification;
+import android.app.ActivityManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
+import android.util.Log;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 /**
  * fyj
@@ -28,6 +29,10 @@ public class MyTelService extends Service {
 
 	private SharedPreferences sp;
 	private SmsManager sms;
+
+	private Thread repeatQueryThread;
+	private boolean flag = true;
+	private boolean twoIsRun = false;
 
 	public MyTelService() {
 	}
@@ -75,26 +80,36 @@ public class MyTelService extends Service {
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		lbm.sendBroadcast(new Intent(BroadCmd.START_SERVICE));
-		foregroundNotif();
-		return START_STICKY;
+		flag = true;
+
+		repeatQueryThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (flag) {
+					try {
+						repeatQueryThread.sleep(1000 * 4);
+
+						twoIsRun = isServiceRunning("com.fyj.fmessage.ThreadKeeperCoreService");
+
+						if (!twoIsRun) {
+							startService(new Intent(MyTelService.this, ThreadKeeperCoreService.class));
+						}
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		});
+		repeatQueryThread.start();
+		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		flag = false;
 		lbm.sendBroadcast(new Intent(BroadCmd.STOP_SERVICE));
 		lbm.unregisterReceiver(mReceiver);
-	}
-
-	private void foregroundNotif() {
-		Notification notification = new Notification();
-		notification.flags = Notification.FLAG_ONGOING_EVENT;
-		notification.flags |= Notification.FLAG_NO_CLEAR;
-		notification.flags |= Notification.FLAG_FOREGROUND_SERVICE;
-		if (Build.VERSION.SDK_INT > Build.VERSION_CODES.JELLY_BEAN) {
-			notification.priority = Notification.PRIORITY_MIN;
-		}
-		this.startForeground(1120, notification);
 	}
 
 	private String formatMsg(SmsMessage msg) {
@@ -113,6 +128,20 @@ public class MyTelService extends Service {
 
 	private void sengMeg(String tel, String msg) {
 		sms.sendTextMessage(tel, null, msg, null, null);
+	}
+
+	public boolean isServiceRunning(String serviceClassName) {
+		final ActivityManager activityManager = (ActivityManager) MyTelService.this.getSystemService(Context
+				.ACTIVITY_SERVICE);
+		final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer
+				.MAX_VALUE);
+
+		for (ActivityManager.RunningServiceInfo runningServiceInfo : services) {
+			if (runningServiceInfo.service.getClassName().contains(serviceClassName)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }

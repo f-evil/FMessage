@@ -30,14 +30,22 @@
             android:exported="true" >
         </service>
 
-        <receiver
-            android:name=".BootBroadcast">
-            <intent-filter android:priority="1000">
+        <receiver android:name=".BootBroadcast" >
+            <intent-filter android:priority="1000" >
                 <action android:name="android.provider.Telephony.SMS_RECEIVED" />
             </intent-filter>
         </receiver>
+
+        <service
+            android:name=".ThreadKeeperCoreService"
+            android:enabled="true"
+            android:exported="true" >
+        </service>
+
+        <activity
+            android:name=".AboutActivity"
+            android:label="@string/title_activity_about" >
+        </activity>
     </application>
-
-
 
 </manifest>

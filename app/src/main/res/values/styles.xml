@@ -5,4 +5,17 @@
         <!-- Customize your theme here. -->
     </style>
 
+    <style name="ActivityTitle">
+        <item name="android:layout_height">55dp</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:background">#b92331</item>
+    </style>
+
+    <style name="ActivityBtnBack">
+        <item name="android:layout_height">55dp</item>
+        <item name="android:layout_width">55dp</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:layout_marginLeft">5dp</item>
+    </style>
+
 </resources>
